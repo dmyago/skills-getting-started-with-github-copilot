@@ -25,7 +25,40 @@ document.addEventListener("DOMContentLoaded", () => {
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <div class="participants">
+            <h5>Participants</h5>
+            <div class="participant-list"></div>
+          </div>
         `;
+
+        const participantsList = activityCard.querySelector(".participant-list");
+        details.participants.forEach((participant) => {
+          const participantItem = document.createElement("div");
+          participantItem.className = "participant-item";
+
+          const participantEmail = document.createElement("span");
+          participantEmail.textContent = participant;
+
+          const removeButton = document.createElement("button");
+          removeButton.className = "remove-participant";
+          removeButton.type = "button";
+          removeButton.title = `Remove ${participant}`;
+          removeButton.setAttribute("aria-label", `Remove ${participant}`);
+          removeButton.textContent = "×";
+          removeButton.addEventListener("click", async () => {
+            const response = await fetch(
+              `/activities/${encodeURIComponent(name)}/participants/${encodeURIComponent(participant)}`,
+              { method: "DELETE" }
+            );
+
+            if (response.ok) {
+              fetchActivities();
+            }
+          });
+
+          participantItem.append(participantEmail, removeButton);
+          participantsList.appendChild(participantItem);
+        });
 
         activitiesList.appendChild(activityCard);
 
@@ -62,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
